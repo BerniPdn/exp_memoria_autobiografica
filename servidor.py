@@ -22,23 +22,21 @@ def after_request(response):
     return response
 
 # =========================================================================
-# ENDPOINT DE AUDIO: Recibe el archivo de audio (.webm) bajo la clave 'video'
-# Nota: Mantenemos la clave 'video' en el request.files porque el JS nativo
-# de recordVideo del laboratorio viaja estructurado de esa manera.
+# ENDPOINT DE AUDIO: Recibe el archivo de audio (.webm)
 # =========================================================================
-@app.route('/api/v1/record_video/<run_id>/', methods=['POST', 'OPTIONS'])
-def record_video(run_id):
+@app.route('/api/v1/record_audio/<run_id>/', methods=['POST', 'OPTIONS'])
+def record_audio(run_id):
     if request.method == 'OPTIONS':
         return jsonify({"status": "OK"}), 200
         
     print(f"\n🎙️ [AUDIO] Petición entrante para la sesión (run-id): {run_id}")
     
-    # Comprobamos que el archivo venga bajo la clave 'video' (exigencia del script recordVideo)
-    if 'video' not in request.files:
+    # Comprobamos que el archivo venga bajo la clave 'audio' (exigencia del script recordAudio)
+    if 'audio' not in request.files:
         print("❌ Error: No se encontró la clave de archivo esperada en el payload.")
         return jsonify({"status": "FAIL", "error": "Falta archivo de audio"}), 400
         
-    archivo = request.files['video']
+    archivo = request.files['audio']
     if archivo.filename == '':
         print("❌ Error: Nombre de archivo vacío.")
         return jsonify({"status": "FAIL", "error": "Nombre de archivo vacío"}), 400

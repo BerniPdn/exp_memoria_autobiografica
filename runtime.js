@@ -54,7 +54,7 @@ function recordAudio(blobAudio, nombreArchivo) {
         return response.json();
     })
     .then(data => {
-        console.log("Video guardado con éxito en servidor:", JSON.stringify(data));
+        console.log("Audio guardado con éxito en servidor:", JSON.stringify(data));
         return data;
 	});
 	}

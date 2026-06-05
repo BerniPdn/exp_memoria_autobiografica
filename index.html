@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/@jspsych/plugin-fullscreen@2.0.0"></script>
     <script src="https://unpkg.com/@jspsych/plugin-survey-multi-choice@2.0.0"></script>
     <link href="https://unpkg.com/jspsych@8.2.3/css/jspsych.css" rel="stylesheet">
-    <script src="runtimcqe.js"></script>
+    <script src="runtime.js"></script>
     <script src="recorder.js"></script>
 </head>
 
@@ -133,7 +133,7 @@
         /**
          * Crea un trial de jsPsych para la tarea de memoria autobiográfica situada.
          * Inicia la grabación, maneja el temporizador visual y guarda metadatos específicos del período.
-         * @param {string} nombreArchivo - Nombre base con el que se guardará el video en el servidor.
+         * @param {string} nombreArchivo - Nombre base con el que se guardará el audio en el servidor.
          * @param {string} periodo - El período de tiempo solicitado (ej: 'la niñez', 'el último año').
          * @param {number} tiempo - Tiempo máximo en segundos que dura el relato antes de terminarse.
          * @returns {Object} Devuelve el objeto de configuración del trial para el timeline de jsPsych.
@@ -430,12 +430,12 @@
             `,
             choices: [],
             on_load: function() {
-                console.log("[Final] Verificando si quedan videos viajando en la fila...");
+                console.log("[Final] Verificando si quedan audios viajando en la fila...");
                 
                 mostrarPantallaCarga();
 
                 esperarQueTermineLaCola().then(() => {
-                    console.log("[Final] ¡La fila de videos se vació por completo! Todo a salvo en el servidor.");
+                    console.log("[Final] ¡La fila de audios se vació por completo! Todo a salvo en el servidor.");
                     ocultarPantallaCarga(); 
                     
                     if (typeof finishExperiment === 'function') {

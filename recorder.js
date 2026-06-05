@@ -15,12 +15,6 @@ function inicializarGrabador(stream) {
         console.error("No se recibió un stream válido para inicializar el grabador.");
         return;
     }
-
-    // Achicando el tamaño del video
-    const opciones = { 
-        mimeType: 'audio/webm;codecs=opus',
-        videoBitsPerSecond: 5000000
-    };
     
     try {
         grabadorMedia = new MediaRecorder(stream, opciones);
@@ -41,7 +35,7 @@ function inicializarGrabador(stream) {
         if (evento.data && evento.data.size > 0) {
             // Por si la compu del paciente se queda sin espacio
             try {
-                fragmentosVideo.push(evento.data);   
+                fragmentosAudio.push(evento.data);   
             } catch (error) {
                 console.error("ERROR CRÍTICO: Se agotó el espacio de almacenamiento temporal del navegador.", error);
                 console.warn("Intentando salvar los datos capturados hasta el momento...");
@@ -59,7 +53,7 @@ function comenzarGrabacion() {
         return;
     }
     
-    fragmentosVideo = [];
+    fragmentosAudio = [];
     grabadorMedia.start(1000); 
     console.log("Grabación iniciada...");
 }
@@ -185,7 +179,7 @@ function frenarYEnviarServidor(nombreArchivo) {
             return;
         }        
         const fragmentosDeEsteTrial = [...fragmentosAudio];
-        fragmentosVideo = []; 
+        fragmentosAudio = []; 
         
         const audioBlob = new Blob(fragmentosDeEsteTrial, { type: 'audio/webm' });
         console.log(`[Cola] Blob creado con éxito para ${nombreArchivo}. Tamaño real asegurado: ${audioBlob.size} bytes.`);
@@ -197,7 +191,7 @@ function frenarYEnviarServidor(nombreArchivo) {
         colaSubidas = colaSubidas.then(() => {
             console.log(`[Cola] -> Arrancando transmisión de fondo: ${nombreArchivo} (${audioBlob.size} bytes)`);
             
-            return recordVideo(audioBlob, `audio_${run_id}_${nombreArchivo}`)
+            return recordAudio(audioBlob, `audio_${run_id}_${nombreArchivo}`)
                 .then(() => {
                     return recordData({
                         trial: nombreArchivo,
