@@ -4,7 +4,7 @@
 
 // Variables globales para mantener el estado de la grabación
 let grabadorMedia = null;
-let fragmentosVideo = [];
+let fragmentosAudio = [];
 let intervaloTimer = null;
 let streamFisico = null;
 let colaSubidas = Promise.resolve();
@@ -18,23 +18,22 @@ function inicializarGrabador(stream) {
 
     // Achicando el tamaño del video
     const opciones = { 
-        mimeType: 'video/webm;codecs=vp8,opus',
+        mimeType: 'audio/webm;codecs=opus',
         videoBitsPerSecond: 5000000
     };
     
     try {
         grabadorMedia = new MediaRecorder(stream, opciones);
-        console.log("Grabador inicializado en maxima calidad");
+        console.log("Grabador inicializado con codec Opus");
     } catch (e) {
         // Si falla usar el que tenga el navegador por defecto
         grabadorMedia = new MediaRecorder(stream);
-        console.warn("Fallo plan A (vp8), intentando Plan B de alta calidad sin códec forzado", e);
+        console.warn("Fallo plan A intentando Plan B sin códec forzado", e);
             try {
-                grabadorMedia = new MediaRecorder(stream, { videoBitsPerSecond: 5000000 });
-                console.log("Grabador inicializado")
-            } catch (err) {
                 grabadorMedia = new MediaRecorder(stream);
-                console.error("Fallo plan B. Inicializado en modo por defecto del navegador", err);
+                console.log("Grabador inicializado en modo nativo")
+            } catch (err) {
+                console.error("ERROR. No se pudo inicializar ningun grabador", err);
             }
         }
 
@@ -181,29 +180,25 @@ function frenarYEnviarServidor(nombreArchivo) {
     console.log(`[Fila] Iniciando proceso de frenado para: ${nombreArchivo}. State actual: ${grabadorMedia.state}`);
  
     grabadorMedia.onstop = function() {
-        if (fragmentosVideo.length === 0) {
-            console.warn(`[Fila] Alerta preventiva: El array global ya estaba vacío en onstop para ${nombreArchivo}.`);
+        if (fragmentosAudio.length === 0) {
+            console.warn(`[Fila] Alerta: El array global ya estaba vacío en onstop para ${nombreArchivo}.`);
             return;
-        }
- 
-        console.log(`[Cola] Hardware detenido en limpio. Paquetes acumulados: ${fragmentosVideo.length}`);
-        
-        const fragmentosDeEsteTrial = [...fragmentosVideo];
+        }        
+        const fragmentosDeEsteTrial = [...fragmentosAudio];
         fragmentosVideo = []; 
         
-        const videoBlob = new Blob(fragmentosDeEsteTrial, { type: 'video/webm' });
-        console.log(`[Cola] Blob creado con éxito para ${nombreArchivo}. Tamaño real asegurado: ${videoBlob.size} bytes.`);
+        const audioBlob = new Blob(fragmentosDeEsteTrial, { type: 'audio/webm' });
+        console.log(`[Cola] Blob creado con éxito para ${nombreArchivo}. Tamaño real asegurado: ${audioBlob.size} bytes.`);
 
         const datosActualesJsPsych = jsPsych.data.get().last(1).values()[0] || {};
         const rtCapturado = datosActualesJsPsych.rt || null;
         const esTimeoutReal = datosActualesJsPsych.timeout || false;
  
         colaSubidas = colaSubidas.then(() => {
-            console.log(`[Cola] -> Arrancando transmisión de fondo: ${nombreArchivo} (${videoBlob.size} bytes)`);
+            console.log(`[Cola] -> Arrancando transmisión de fondo: ${nombreArchivo} (${audioBlob.size} bytes)`);
             
-            return recordVideo(videoBlob, `grabacion_${run_id}_${nombreArchivo}`)
+            return recordVideo(audioBlob, `audio_${run_id}_${nombreArchivo}`)
                 .then(() => {
-                    const trialData = jsPsych.data.get().last(1).values()[0] || {};
                     return recordData({
                         trial: nombreArchivo,
                         rt: rtCapturado,
@@ -232,7 +227,7 @@ function esperarQueTermineLaCola() {
    return colaSubidas;
 }
 
-function apagarCamaraYMicofono() {
+function apagarMicofono() {
     if (streamFisico) {
         streamFisico.getTracks().forEach(track => track.stop());
         console.log("Hardware liberado y apagado.");

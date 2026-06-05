@@ -1,8 +1,7 @@
-
 """
-Servidor local de pruebas para el experimento CookieJar (Actualizado).
-Emula los endpoints de datapruebas.org para recibir audios/videos y datos de jsPsych.
-Hecho con Gemini - Modificado para soportar la nueva API de record_video en el puerto 8002.
+Servidor local de pruebas para el experimento CookieJar (Actualizado para AUDIO).
+Emula los endpoints de datapruebas.org para recibir audios puros y datos de jsPsych.
+Modificado para dar soporte al almacenamiento exclusivo de archivos de audio en el puerto 8002.
 """
 
 import os
@@ -10,8 +9,8 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# Creamos la carpeta donde se guardarán los videos si no existe
-CARPETA_GRABACIONES = '/Users/berni/Desktop/grabaciones_cookiejar'
+# Creamos la carpeta específica donde se guardarán los audios si no existe
+CARPETA_GRABACIONES = '/Users/berni/Desktop/audios_cookiejar'
 os.makedirs(CARPETA_GRABACIONES, exist_ok=True)
 
 # Configuración de cabeceras para permitir CORS (Cross-Origin Resource Sharing)
@@ -23,30 +22,32 @@ def after_request(response):
     return response
 
 # =========================================================================
-# NUEVO ENDPOINT: Recibe el archivo de video (.webm) bajo la clave 'video'
+# ENDPOINT DE AUDIO: Recibe el archivo de audio (.webm) bajo la clave 'video'
+# Nota: Mantenemos la clave 'video' en el request.files porque el JS nativo
+# de recordVideo del laboratorio viaja estructurado de esa manera.
 # =========================================================================
 @app.route('/api/v1/record_video/<run_id>/', methods=['POST', 'OPTIONS'])
 def record_video(run_id):
     if request.method == 'OPTIONS':
         return jsonify({"status": "OK"}), 200
         
-    print(f"\n🎥 [VIDEO] Petición entrante para la sesión (run-id): {run_id}")
+    print(f"\n🎙️ [AUDIO] Petición entrante para la sesión (run-id): {run_id}")
     
-    # Comprobamos que el archivo venga bajo la clave 'video' como pide la nueva API
+    # Comprobamos que el archivo venga bajo la clave 'video' (exigencia del script recordVideo)
     if 'video' not in request.files:
-        print("❌ Error: No se encontró la clave 'video' en el archivo enviado.")
-        return jsonify({"status": "FAIL", "error": "Falta archivo de video"}), 400
+        print("❌ Error: No se encontró la clave de archivo esperada en el payload.")
+        return jsonify({"status": "FAIL", "error": "Falta archivo de audio"}), 400
         
     archivo = request.files['video']
     if archivo.filename == '':
         print("❌ Error: Nombre de archivo vacío.")
         return jsonify({"status": "FAIL", "error": "Nombre de archivo vacío"}), 400
 
-    # Construimos la ruta de destino y guardamos el archivo físico en el disco
+    # Construimos la ruta de destino y guardamos el archivo de audio físico en el disco
     ruta_guardado = os.path.join(CARPETA_GRABACIONES, archivo.filename)
     archivo.save(ruta_guardado)
     
-    print(f"✅ ¡Video guardado con éxito localmente!")
+    print(f"✅ ¡Audio de la descripción guardado con éxito localmente!")
     print(f"   📂 Ubicación: {ruta_guardado}")
     return jsonify({"status": "OK"}), 200
 
@@ -63,24 +64,22 @@ def record_data(run_id):
     return jsonify({"status": "OK"}), 200
 
 
-# 3. Endpoint para finalizar la corrida experimental
+# 3. Endpoint para finalizar la corrida experimental (Fin de la Parte 1 o Parte 2)
 @app.route('/api/v1/end_run/<run_id>/', methods=['POST', 'OPTIONS'])
 def end_run(run_id):
     if request.method == 'OPTIONS':
         return jsonify({"status": "OK"}), 200
         
-    # Agregamos un .get por si mandan el body vacío al finalizar
     datos = request.json if request.is_json else {}
-    print(f"\n🏁 [FIN] El experimento finalizó para run-id [{run_id}].")
-    print(f"   🏆 Puntaje final (Score): {datos.get('score', 'No especificado') if datos else 'No especificado'}")
+    print(f"\n🏁 [FIN] Notificación de cierre recibida para run-id [{run_id}].")
+    print(f"   🏆 Puntaje final (si aplica): {datos.get('score', 'No aplica/Solo texto')}")
     return jsonify({"status": "OK"}), 200
 
 
 if __name__ == '__main__':
     print("====================================================")
-    print(" Iniciando Servidor de Pruebas Local (CookieJar) ")
-    print(" Actualizado al puerto de la nueva API: 8002 ")
-    print(" Escuchando en: http://localhost:8002 ")
+    print("  Iniciando Servidor de Pruebas Local (AUDIO ONLY)  ")
+    print("  Compatible con el nuevo setup del experimento   ")
+    print("  Escuchando en: http://localhost:8002              ")
     print("====================================================")
-    # CAMBIO CRÍTICO: Ahora corre en el puerto 8002 para que tu JavaScript no rebote
     app.run(port=8002, debug=True)

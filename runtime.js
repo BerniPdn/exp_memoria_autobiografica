@@ -3,10 +3,10 @@
 const queryParams = new URLSearchParams(window.location.search);
 var run_id = queryParams.get('run-id');
 
-// var domain = 'localhost:8002';
-// var protocol = 'http';
-var domain = 'datapruebas.org/dj';
-var protocol = 'https';
+var domain = 'localhost:8002';
+var protocol = 'http';
+// var domain = 'datapruebas.org/dj';
+// var protocol = 'https';
 
 
 /* Library */
@@ -21,7 +21,7 @@ function recordData(aJsonObject) {
 	let url = `${protocol}://${domain}/api/v1/record_data/${run_id}/`;
 	return fetch(url, {
 	    method: 'POST',
-		credentials: "include",
+		// credentials: "include",
 	    headers: {
 	        'Accept': 'application/json',
 	        'Content-Type': 'application/json',
@@ -33,15 +33,15 @@ function recordData(aJsonObject) {
 	.then(response => console.log(JSON.stringify(response)));
 }
 
-function recordVideo(blobVideo, nombreArchivo) {
-    let url = `${protocol}://${domain}/api/v1/record_video/${run_id}/`;
+function recordAudio(blobAudio, nombreArchivo) {
+    let url = `${protocol}://${domain}/api/v1/record_audio/${run_id}/`;
     
     let formData = new FormData();
-    formData.append('video', blobVideo, `${nombreArchivo}.webm`);
+    formData.append('audio', blobAudio, `${nombreArchivo}.webm`);
 
     return fetch(url, {
         method: 'POST',
-		credentials: "include",
+		// credentials: "include",
         headers: {
             "X-CSRFToken": getCookie("csrftoken")
         },
@@ -62,7 +62,7 @@ function recordVideo(blobVideo, nombreArchivo) {
 function endExperiment(score) {
 	return fetch(`${protocol}://${domain}/api/v1/end_run/${run_id}/`, {
 	    method: 'POST',
-		credentials: "include",
+		// credentials: "include",
 	    headers: {
 	        'Accept': 'application/json',
 	        'Content-Type': 'application/json',
@@ -75,5 +75,5 @@ function endExperiment(score) {
 /* App */
 async function finishExperiment() {
 	endExperiment(100)
-	apagarCamaraYMicofono();
+	apagarMicofono();
 }
