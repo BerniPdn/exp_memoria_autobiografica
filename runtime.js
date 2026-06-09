@@ -75,5 +75,5 @@ function endExperiment(score) {
 /* App */
 async function finishExperiment() {
 	endExperiment(100)
-	apagarMicofono();
+	apagarMicrofono();
 }

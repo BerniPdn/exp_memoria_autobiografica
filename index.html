@@ -94,10 +94,11 @@
 
     <script>
         const jsPsych = initJsPsych();
+        let experimentoTerminado = false;
 
         //Seguro anti-cierre de pestaña
         window.addEventListener('beforeunload', function (e) {
-            if (jsPsych.getProgress().current_trial_global < 16) e.preventDefault();
+            if (!experimentoTerminado) e.preventDefault();
         });
         
         if (!run_id) {
@@ -423,8 +424,9 @@
                 mostrarPantallaCarga();
 
                 esperarQueTermineLaCola().then(() => {
-                    console.log("[Final] ¡La fila de audios se vació por completo! Todo a salvo en el servidor.");
+                    experimentoTerminado = true;
                     ocultarPantallaCarga(); 
+                    console.log("[Final] ¡La fila de audios se vació por completo! Todo a salvo en el servidor.");
                     
                     if (typeof finishExperiment === 'function') {
                         finishExperiment(); 

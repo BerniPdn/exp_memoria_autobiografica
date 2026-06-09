@@ -17,7 +17,7 @@ function inicializarGrabador(stream) {
     }
     
     try {
-        grabadorMedia = new MediaRecorder(stream, opciones);
+        grabadorMedia = new MediaRecorder(stream, {mimeType: 'audio/webm;codecs=opus'});
         console.log("Grabador inicializado con codec Opus");
     } catch (e) {
         // Si falla usar el que tenga el navegador por defecto
@@ -221,7 +221,7 @@ function esperarQueTermineLaCola() {
    return colaSubidas;
 }
 
-function apagarMicofono() {
+function apagarMicrofono() {
     if (streamFisico) {
         streamFisico.getTracks().forEach(track => track.stop());
         console.log("Hardware liberado y apagado.");
